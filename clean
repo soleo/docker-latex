@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -rf *.log
+rm -rf *.aux
+rm -rf *.out
