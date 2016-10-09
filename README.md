@@ -1,23 +1,46 @@
 # Docker with LaTeX
 
-a docker repo for LaTeX 
+LaTeX docker image for compiling latex files. Details of the package can be found on http://packages.ubuntu.com/xenial/texlive-full.
+
+## software verisons
+
+* Ubuntu:16.04
+* textlive-full(2015.20160320-1)
+* gnuplot
 
 ## Usage
 
-- Build
+- Build image
 
-``docker pull soleo/latex `` or `` docker build soleo/latex . ``
+```shell
+$ docker pull soleo/latex
+``` 
 
-- Compile 
+or 
+
+```shell
+$ docker build soleo/latex . 
 ```
-docker run --rm -v `pwd`:/latex soleo/latex build example.tex
+
+- Compile LaTeX
+
+```shell
+docker run --rm -v `pwd`:/mnt/src soleo/latex example.tex
 ```
 
 - Clean the log, aux, etc files
 
+```shell
+./clean
 ```
-docker run --rm -v `pwd`:/latex soleo/latex clean
+
+- Shortcut function for bash
+
+```shell
+docker-latex() { docker run -v $PWD:/mnt/src --rm  soleo/latex:latest $@; return $?; }
 ```
+
+add the function to your .bash_rc or .bash_profile
 
 ## Feedback
 
