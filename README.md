@@ -25,13 +25,7 @@ $ docker build soleo/latex .
 - Compile LaTeX
 
 ```shell
-docker run --rm -v `pwd`:/mnt/src soleo/latex example.tex
-```
-
-- Clean the log, aux, etc files
-
-```shell
-./clean
+$ docker run --rm -v `pwd`:/mnt/src soleo/latex example.tex 
 ```
 
 - Shortcut function for bash

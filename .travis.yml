@@ -1,0 +1,15 @@
+language: ruby
+
+sudo: required
+
+services:
+    - docker
+
+notifications: false
+
+install:
+  - docker build -t soleo/latex .
+  - docker run --name latex_citest  -v `pwd`:/mnt/src soleo/latex example.tex
+
+script:
+  - docker ps -a | grep -q latex_citest
