@@ -1,5 +1,5 @@
 # Docker with LaTeX
-[![Build Status](https://travis-ci.org/soleo/latex.svg?branch=master)](https://travis-ci.org/soleo/latex)
+[![Build Status](https://travis-ci.org/soleo/docker-latex.svg?branch=master)](https://travis-ci.org/soleo/docker-latex)
 
 LaTeX docker image for compiling latex files. Details of the package can be found on http://packages.ubuntu.com/xenial/texlive-full.
 
