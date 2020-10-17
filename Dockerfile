@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu:latest
 MAINTAINER Xinjiang Shao <shaoxinjiang at gmail dot com>
 
 ENV DEBIAN_FRONTEND noninteractive
