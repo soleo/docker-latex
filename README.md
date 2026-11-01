@@ -51,6 +51,10 @@ docker-latex() { docker run -v "$PWD":/mnt/src --rm soleo/latex:latest "$@"; }
 
 Add the function to your `.bashrc` or `.zshrc`.
 
+## Security note
+
+latexmk runs any `latexmkrc` / `.latexmkrc` in the mounted folder, and that file is Perl code. Only compile projects you trust. The container runs as root and can write anywhere in the mounted folder.
+
 ## Feedback
 
 Feel free to fork it or send me a PR to improve it.
