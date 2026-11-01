@@ -1,0 +1,32 @@
+% XeLaTeX smoke test for CV builds:
+%   docker run --rm -v "$PWD":/mnt/src -e LATEX_ENGINE=xelatex soleo/latex example-cv.tex
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{fontspec}
+\setmainfont{Merriweather}
+\setsansfont{Open Sans}
+\usepackage{fontawesome5}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=1.2em}
+\pagestyle{empty}
+
+\newcommand{\cvsection}[1]{\vspace{1em}{\sffamily\bfseries\large\color{teal}#1}\par\vspace{0.3em}\hrule\vspace{0.5em}}
+
+\begin{document}
+{\sffamily\bfseries\Huge Jane Example}\par
+\vspace{0.4em}
+{\small\faEnvelope\ \href{mailto:jane@example.com}{jane@example.com} \quad
+ \faGithub\ \href{https://github.com/example}{example} \quad
+ \faGlobe\ \href{https://example.com}{example.com}}
+
+\cvsection{Experience}
+\textbf{Software Engineer}, Example Co. \hfill 2020 -- Present
+\begin{itemize}
+  \item Built things with \emph{care}.
+\end{itemize}
+
+\cvsection{Education}
+\textbf{B.S. Computer Science}, Example University \hfill 2016 -- 2020
+\end{document}
