@@ -1,42 +1,56 @@
 # Docker with LaTeX
-[![Build Status](https://travis-ci.org/soleo/docker-latex.svg?branch=master)](https://travis-ci.org/soleo/docker-latex)
+[![Docker Container Publisher](https://github.com/soleo/docker-latex/actions/workflows/ci.yml/badge.svg)](https://github.com/soleo/docker-latex/actions/workflows/ci.yml)
 
-LaTeX docker image for compiling latex files. Details of the package can be found on http://packages.ubuntu.com/xenial/texlive-full.
+LaTeX docker image for compiling LaTeX files, including CVs that need XeLaTeX or LuaLaTeX with system fonts. Package details: https://packages.ubuntu.com/resolute/texlive-full.
 
-## software verisons
+## Software versions
 
-* Ubuntu:16.04
-* textlive-full(2015.20160320-1)
+* Ubuntu 26.04 LTS
+* texlive-full (pdflatex, xelatex, lualatex, latexmk, biber)
+* fontconfig, with TeX Live's OpenType/TrueType fonts registered so `fontspec` can load them by name (e.g. Open Sans, Merriweather)
 * gnuplot
 
 ## Usage
 
-- Build image
+- Get the image
 
 ```shell
 $ docker pull soleo/latex
-``` 
-
-or 
-
-```shell
-$ docker build soleo/latex . 
 ```
 
-- Compile LaTeX
+or
 
 ```shell
-$ docker run --rm -v `pwd`:/mnt/src soleo/latex example.tex 
+$ docker build -t soleo/latex .
 ```
 
-- Shortcut function for bash
+- Compile LaTeX (pdflatex by default; latexmk reruns until references settle, then removes aux files)
 
 ```shell
-docker-latex() { docker run -v $PWD:/mnt/src --rm  soleo/latex:latest $@; return $?; }
+$ docker run --rm -v "$PWD":/mnt/src soleo/latex example.tex
 ```
 
-add the function to your .bash_rc or .bash_profile
+- Compile a CV with XeLaTeX or LuaLaTeX
+
+```shell
+$ docker run --rm -v "$PWD":/mnt/src -e LATEX_ENGINE=xelatex soleo/latex example-cv.tex
+```
+
+- Run any tool directly
+
+```shell
+$ docker run --rm -v "$PWD":/mnt/src soleo/latex xelatex cv.tex
+$ docker run --rm -v "$PWD":/mnt/src soleo/latex fc-list | grep -i "open sans"
+```
+
+- Shortcut function for bash/zsh
+
+```shell
+docker-latex() { docker run -v "$PWD":/mnt/src --rm soleo/latex:latest "$@"; }
+```
+
+Add the function to your `.bashrc` or `.zshrc`.
 
 ## Feedback
 
-Feel free to fork it or send me PR to improve it.
+Feel free to fork it or send me a PR to improve it.
