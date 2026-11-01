@@ -20,6 +20,7 @@
   --accent: #2343b8;     /* link ink */
   --box: #e0251b;        /* hyperref's red link box */
   --code-bg: #eef0f4;
+  --bar-other: #9aa2b1;
   --serif: "STIX Two Text", "STIX Two", "Latin Modern Roman", Georgia, "Times New Roman", serif;
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --measure: 66ch;
@@ -28,13 +29,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #111318; --sheet: #191c23; --ink: #e5e7ec; --muted: #9aa1ae;
-    --rule: #2c313b; --accent: #93a9ff; --box: #ff6b61; --code-bg: #1d2129;
+    --rule: #2c313b; --accent: #93a9ff; --box: #ff6b61; --code-bg: #1d2129; --bar-other: #5d6575;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #111318; --sheet: #191c23; --ink: #e5e7ec; --muted: #9aa1ae;
-  --rule: #2c313b; --accent: #93a9ff; --box: #ff6b61; --code-bg: #1d2129;
+  --rule: #2c313b; --accent: #93a9ff; --box: #ff6b61; --code-bg: #1d2129; --bar-other: #5d6575;
   color-scheme: dark;
 }
 
@@ -167,6 +168,30 @@ dl.toc dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; fl
 .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1.5rem 2.5rem; }
 .two > div { min-width: 0; display: grid; gap: 0.6rem; align-content: start; }
 
+/* Size comparison: horizontal bars on one GB scale (0-7 GB) */
+figure.sizes { margin: 1.75rem 0 2rem; max-width: 46rem; display: grid; gap: 0.75rem; }
+figure.sizes h3 { margin: 0; }
+.bars { display: grid; gap: 0.9rem; padding-bottom: 1.4rem; position: relative; }
+.bar-row { display: grid; grid-template-columns: 10.5rem minmax(0, 1fr); align-items: center; gap: 0.75rem; }
+.bar-name { font-size: 1rem; }
+.track { position: relative; height: 1.5rem; margin-right: 4.5rem; }
+.bar { height: 100%; border-radius: 0 4px 4px 0; }
+.bar.ours { background: var(--accent); }
+.bar.other { background: var(--bar-other); }
+.bar-val { position: absolute; top: 50%; transform: translateY(-50%); padding-left: 0.5rem; font-family: var(--mono); font-size: 0.82rem; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink); }
+.axis { position: relative; height: 1rem; margin-left: 11.25rem; margin-right: 4.5rem; border-top: 1px solid var(--rule); }
+.axis span { position: absolute; top: 0.2rem; transform: translateX(-50%); font-family: var(--mono); font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+.axis span:first-child { transform: none; }
+table.compare tbody th { font-weight: 600; padding-right: 1.25rem; }
+table.compare td, table.compare tbody th { border-bottom: 1px solid var(--rule); }
+table.compare tbody tr:last-child td, table.compare tbody tr:last-child th { border-bottom: 2px solid var(--ink); }
+.pick { margin-top: 2rem; }
+.pick ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; font-size: 1.02rem; }
+@media (max-width: 560px) {
+  .bar-row { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
+  .axis { margin-left: 0; }
+}
+
 aside.caution {
   border-left: 3px solid var(--box); padding: 0.2rem 0 0.2rem 1rem; max-width: var(--measure);
 }
@@ -193,6 +218,7 @@ footer { border-top: 1px solid var(--rule); padding-block: 1.75rem 2.5rem; font-
   <a class="brand" href="#">soleo/<span>docker-</span>latex</a>
   <nav aria-label="Sections">
     <a href="#audience">Who it's for</a>
+    <a href="#compare">vs MacTeX</a>
     <a href="#usage">Usage</a>
     <a href="#engines">Engines</a>
     <a href="#ci">CI</a>
@@ -247,7 +273,7 @@ for all $<span class="k">\epsilon</span> &gt; 0$ ...
 
 <section id="audience" aria-labelledby="h-audience">
   <h2 id="h-audience"><span class="n">1</span><span>Who it's for</span></h2>
-  <p class="col">Anyone who writes in <span class="latex">L<span class="a">A</span>T<span class="e">E</span>X</span> but doesn't want a 7&nbsp;GB TeX install managed by hand on every machine.</p>
+  <p class="col">Anyone who writes in <span class="latex">L<span class="a">A</span>T<span class="e">E</span>X</span> but doesn't want to install and update a multi-gigabyte TeX distribution by hand on every machine.</p>
   <div class="audiences">
     <div>
       <h3>Researchers and students</h3>
@@ -264,8 +290,70 @@ for all $<span class="k">\epsilon</span> &gt; 0$ ...
   </div>
 </section>
 
+<section id="compare" aria-labelledby="h-compare">
+  <h2 id="h-compare"><span class="n">2</span><span>Compared with MacTeX</span></h2>
+  <p class="col">MacTeX is the standard TeX Live installer for macOS. It is the right choice for many Mac users. Here is how the two differ.</p>
+
+  <figure class="sizes" aria-labelledby="sizes-cap">
+    <figcaption id="sizes-cap"><h3>Download size</h3></figcaption>
+    <div class="bars" role="list">
+      <div class="bar-row" role="listitem" title="MacTeX.pkg: 6.4 GB (24 March 2026)">
+        <span class="bar-name">MacTeX.pkg</span>
+        <div class="track"><div class="bar other" style="width: 91.43%"></div><span class="bar-val" style="left: 91.43%">6.4 GB</span></div>
+      </div>
+      <div class="bar-row" role="listitem" title="docker-latex image: 2.5 GB compressed">
+        <span class="bar-name">docker-latex image</span>
+        <div class="track"><div class="bar ours" style="width: 35.71%"></div><span class="bar-val" style="left: 35.71%">2.5 GB</span></div>
+      </div>
+      <div class="axis" aria-hidden="true">
+        <span style="left: 0%">0</span><span style="left: 28.57%">2</span><span style="left: 57.14%">4</span><span style="left: 85.71%">6 GB</span>
+      </div>
+    </div>
+    <p class="note">MacTeX.pkg size as of 24 March 2026. The image is the compressed download; it unpacks to 5.4&nbsp;GB. With Docker's containerd image store, which keeps the compressed copy as well, <code>docker image ls</code> shows about 8.2&nbsp;GB. Measured on an arm64 build, 1 November 2026. Docker also needs an engine such as Rancher Desktop, which is not counted here.</p>
+  </figure>
+
+  <div class="table-wrap">
+    <table class="compare">
+      <thead><tr><th scope="col">Feature</th><th scope="col">MacTeX</th><th scope="col">docker-latex</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">TeX Live version</th><td>2026</td><td>2025 (Ubuntu 26.04 package)</td></tr>
+        <tr><th scope="row">Runs on</th><td>macOS only</td><td>macOS, Linux, Windows and CI runners with Docker</td></tr>
+        <tr><th scope="row">Download</th><td>6.4 GB installer</td><td>2.5 GB image</td></tr>
+        <tr><th scope="row">Install</th><td>Graphical installer, admin password</td><td><code>docker pull</code>, after a Docker engine is set up</td></tr>
+        <tr><th scope="row">GUI apps</th><td>TeXShop, BibDesk, LaTeXiT, TeX Live Utility</td><td>None, command line only</td></tr>
+        <tr><th scope="row">Updates</th><td><code>tlmgr</code>, package by package</td><td>Pull a new image; everyone gets the same versions</td></tr>
+        <tr><th scope="row">Same build on every machine</th><td>Only if every machine updates in step</td><td>Yes, pinned by image tag or digest</td></tr>
+        <tr><th scope="row">CI pipelines</th><td>Not practical on Linux runners</td><td>One <code>docker run</code> step</td></tr>
+        <tr><th scope="row">Build speed on a Mac</th><td>Native</td><td>Slower; runs in a Linux VM and reads files through a shared folder</td></tr>
+        <tr><th scope="row">Fonts</th><td>All macOS system fonts</td><td>TeX Live's fonts, plus fonts in your project loaded with <code>fontspec</code></td></tr>
+        <tr><th scope="row">Editor preview and SyncTeX</th><td>Works with Mac editors out of the box</td><td>Editor must be set up to call <code>docker run</code></td></tr>
+        <tr><th scope="row">Uninstall</th><td>Remove <code>/usr/local/texlive</code>, <code>/Library/TeX</code> and the apps</td><td><code>docker rmi ghcr.io/soleo/latex</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="two pick">
+    <div>
+      <h3>Pick MacTeX if</h3>
+      <ul>
+        <li>you write on one Mac and want the newest TeX Live</li>
+        <li>you use TeXShop, BibDesk or live preview with SyncTeX</li>
+        <li>you rely on fonts installed on your Mac</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Pick docker-latex if</h3>
+      <ul>
+        <li>you build on more than one machine or operating system</li>
+        <li>coauthors or CI must produce the same PDF you do</li>
+        <li>you want to remove TeX completely with one command</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
 <section id="usage" aria-labelledby="h-usage">
-  <h2 id="h-usage"><span class="n">2</span><span>Usage</span></h2>
+  <h2 id="h-usage"><span class="n">3</span><span>Usage</span></h2>
   <ol class="steps">
     <li><div>
       <h3>Get a Docker engine</h3>
@@ -276,7 +364,7 @@ docker version</pre>
     </div></li>
     <li><div>
       <h3>Pull the image</h3>
-      <p class="col">It is large (about 8&nbsp;GB) because it carries all of TeX Live. You download it once.</p>
+      <p class="col">The download is about 2.5&nbsp;GB because it carries all of TeX Live. You download it once.</p>
 <pre class="block">docker pull ghcr.io/soleo/latex
 <span class="c"># or build it yourself</span>
 git clone https://github.com/soleo/docker-latex &amp;&amp; cd docker-latex
@@ -296,7 +384,7 @@ docker build -t ghcr.io/soleo/latex .</pre>
 </section>
 
 <section id="engines" aria-labelledby="h-engines">
-  <h2 id="h-engines"><span class="n">3</span><span>Engines</span></h2>
+  <h2 id="h-engines"><span class="n">4</span><span>Engines</span></h2>
   <p class="col">pdfLaTeX is the default. Set <code>LATEX_ENGINE</code> when your document needs Unicode input or system fonts through <code>fontspec</code>.</p>
   <div class="table-wrap">
     <table>
@@ -325,7 +413,7 @@ docker run --rm ghcr.io/soleo/latex fc-list :family</pre>
 </section>
 
 <section id="ci" aria-labelledby="h-ci">
-  <h2 id="h-ci"><span class="n">4</span><span>In GitHub Actions</span></h2>
+  <h2 id="h-ci"><span class="n">5</span><span>In GitHub Actions</span></h2>
   <p class="col">Build the PDF on every push and keep it as a workflow artifact.</p>
 <pre class="block">jobs:
   pdf:
@@ -341,7 +429,7 @@ docker run --rm ghcr.io/soleo/latex fc-list :family</pre>
 </section>
 
 <section id="inside" aria-labelledby="h-inside">
-  <h2 id="h-inside"><span class="n">5</span><span>What's inside</span></h2>
+  <h2 id="h-inside"><span class="n">6</span><span>What's inside</span></h2>
   <dl class="toc">
     <div><dt>Base image</dt><span class="lead" aria-hidden="true"></span><dd>Ubuntu 26.04 LTS</dd></div>
     <div><dt>Distribution</dt><span class="lead" aria-hidden="true"></span><dd>texlive-full, TeX Live 2025</dd></div>
@@ -350,13 +438,14 @@ docker run --rm ghcr.io/soleo/latex fc-list :family</pre>
     <div><dt>Bibliography</dt><span class="lead" aria-hidden="true"></span><dd>biber, BibTeX</dd></div>
     <div><dt>Fonts</dt><span class="lead" aria-hidden="true"></span><dd>TeX Live OTF/TTF via fontconfig</dd></div>
     <div><dt>Plotting</dt><span class="lead" aria-hidden="true"></span><dd>gnuplot</dd></div>
-    <div><dt>Image size</dt><span class="lead" aria-hidden="true"></span><dd>≈ 8.2 GB</dd></div>
+    <div><dt>Download</dt><span class="lead" aria-hidden="true"></span><dd>2.5 GB compressed</dd></div>
+    <div><dt>Unpacked</dt><span class="lead" aria-hidden="true"></span><dd>5.4 GB</dd></div>
     <div><dt>Working directory</dt><span class="lead" aria-hidden="true"></span><dd><code>/mnt/src</code></dd></div>
   </dl>
 </section>
 
 <section id="security" aria-labelledby="h-security">
-  <h2 id="h-security"><span class="n">6</span><span>Before you compile someone else's project</span></h2>
+  <h2 id="h-security"><span class="n">7</span><span>Before you compile someone else's project</span></h2>
   <aside class="caution">
     <p>latexmk runs any <code>latexmkrc</code> or <code>.latexmkrc</code> in the mounted folder, and that file is Perl code. The container runs as root and can write anywhere in the folder you mount. Only compile projects you trust.</p>
   </aside>
