@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>docker-latex</title>
+<meta name="description" content="TeX Live in one Docker image. Compile papers, theses and CVs with pdfLaTeX, XeLaTeX or LuaLaTeX without installing TeX.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single article column like a LaTeX \documentclass{article}, with a wide
+   source-to-page figure as the hero. Sections are numbered the way LaTeX numbers them. */
+:root {
+  --paper: #f6f7f9;      /* page ground, cool grey toward the ink blue */
+  --sheet: #ffffff;      /* typeset page and code surfaces */
+  --ink: #16191f;
+  --muted: #5a6170;
+  --rule: #d9dde4;
+  --accent: #2343b8;     /* link ink */
+  --box: #e0251b;        /* hyperref's red link box */
+  --code-bg: #eef0f4;
+  --serif: "STIX Two Text", "STIX Two", "Latin Modern Roman", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --measure: 66ch;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111318; --sheet: #191c23; --ink: #e5e7ec; --muted: #9aa1ae;
+    --rule: #2c313b; --accent: #93a9ff; --box: #ff6b61; --code-bg: #1d2129;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111318; --sheet: #191c23; --ink: #e5e7ec; --muted: #9aa1ae;
+  --rule: #2c313b; --accent: #93a9ff; --box: #ff6b61; --code-bg: #1d2129;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: env(safe-area-inset-top, 0px) env(safe-area-inset-bottom, 0px);
+}
+.wrap { max-width: 68rem; margin: 0 auto; }
+.col { max-width: var(--measure); }
+
+a { color: var(--accent); text-decoration: none; border-radius: 1px; }
+a:hover, a:focus-visible { outline: 1px solid var(--box); outline-offset: 1px; }
+:focus-visible { outline: 2px solid var(--box); outline-offset: 2px; }
+
+code, pre, .mono { font-family: var(--mono); font-size: 0.86em; }
+:not(pre) > code { background: var(--code-bg); padding: 0.08em 0.35em; border-radius: 3px; }
+
+/* The LaTeX logo, set the traditional way */
+.latex { font-family: var(--serif); letter-spacing: 0; white-space: nowrap; }
+.latex .a { font-size: 0.72em; vertical-align: 0.22em; margin-left: -0.32em; margin-right: -0.12em; }
+.latex .e { display: inline-block; vertical-align: -0.22em; margin-left: -0.16em; margin-right: -0.1em; }
+.tex .e { display: inline-block; vertical-align: -0.22em; margin-left: -0.16em; margin-right: -0.1em; }
+
+/* Header */
+header.top {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: 0.5rem 1.5rem; padding-block: 1.25rem; border-bottom: 1px solid var(--rule);
+}
+.brand { font-family: var(--mono); font-size: 1rem; font-weight: 500; color: var(--ink); }
+.brand span { color: var(--muted); }
+nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; font-family: var(--mono); font-size: 0.85rem; }
+
+/* Hero */
+.hero { padding-block: 3.5rem 2.5rem; display: grid; gap: 2rem; }
+.kicker { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+h1 {
+  font-size: clamp(2.3rem, 5.5vw, 3.9rem); line-height: 1.08; font-weight: 600;
+  margin: 0; text-wrap: balance; max-width: 20ch; letter-spacing: -0.01em;
+}
+.lede { font-size: 1.25rem; color: var(--muted); margin: 0; max-width: 56ch; }
+.lede strong { color: var(--ink); font-weight: 600; }
+
+/* Command line with copy */
+.cmd {
+  display: flex; align-items: stretch; background: var(--sheet); border: 1px solid var(--rule);
+  border-radius: 6px; max-width: 100%; overflow: hidden;
+}
+.cmd pre { margin: 0; padding: 0.85rem 1rem; overflow-x: auto; flex: 1; min-width: 0; font-size: 0.86rem; line-height: 1.5; }
+.cmd pre .p { color: var(--muted); user-select: none; }
+.copy {
+  font-family: var(--mono); font-size: 0.78rem; border: 0; border-left: 1px solid var(--rule);
+  background: transparent; color: var(--muted); padding: 0 1rem; cursor: pointer;
+}
+.copy:hover { color: var(--ink); background: var(--code-bg); }
+
+/* Source -> page figure */
+figure.build { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 1.25rem; align-items: stretch; }
+.pane { min-width: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.pane-label { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); display: flex; justify-content: space-between; gap: 1rem; }
+.source {
+  margin: 0; background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 1rem 1.1rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.55; flex: 1;
+}
+.source .k { color: var(--accent); }
+.source .c { color: var(--muted); }
+.arrow { display: grid; place-items: center; font-family: var(--mono); font-size: 0.75rem; color: var(--muted); text-align: center; gap: 0.4rem; align-content: center; }
+.arrow b { font-size: 1.4rem; font-weight: 400; color: var(--ink); line-height: 1; }
+.sheet {
+  background: #fff; color: #111; border: 1px solid var(--rule); border-radius: 2px;
+  padding: 2.2rem 2rem 1.2rem; font-size: 0.86rem; line-height: 1.5; flex: 1;
+  box-shadow: 0 1px 0 var(--rule), 0 12px 30px -18px rgba(20, 30, 60, 0.35);
+  display: flex; flex-direction: column; gap: 0.55rem; text-align: justify; hyphens: auto;
+}
+.sheet p { margin: 0; text-indent: 1.5em; }
+.sheet p:first-child { text-indent: 0; }
+.sheet .disp { text-align: center; text-indent: 0; font-style: italic; }
+.sheet .folio { margin-top: auto; padding-top: 0.6rem; text-align: center; text-indent: 0; font-size: 0.8rem; }
+
+/* Article sections */
+main section { padding-block: 2.5rem; border-top: 1px solid var(--rule); }
+h2 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 1rem; font-weight: 700; text-wrap: balance; display: flex; gap: 0.9em; }
+h2 .n { font-variant-numeric: tabular-nums; min-width: 1.2em; }
+h3 { font-size: 1.15rem; margin: 0 0 0.35rem; font-weight: 700; }
+p { margin: 0 0 1rem; }
+.note { color: var(--muted); font-size: 1rem; }
+
+/* Audiences */
+.audiences { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1.75rem 2.5rem; margin-top: 1.5rem; }
+.audiences > div { min-width: 0; }
+.audiences p { font-size: 1.02rem; margin: 0; }
+
+/* Steps */
+ol.steps { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 1.75rem; counter-reset: s; }
+ol.steps > li { counter-increment: s; display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: 0 0.5rem; }
+ol.steps > li::before { content: counter(s) "."; font-weight: 700; font-variant-numeric: tabular-nums; padding-top: 0.05rem; }
+ol.steps > li > div { min-width: 0; display: grid; gap: 0.6rem; }
+ol.steps p { margin: 0; }
+
+pre.block {
+  margin: 0; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 0.85rem 1rem; overflow-x: auto; font-size: 0.82rem; line-height: 1.55;
+}
+pre.block .c { color: var(--muted); }
+
+/* Engine table, booktabs style */
+.table-wrap { overflow-x: auto; margin-top: 1.25rem; }
+table { border-collapse: collapse; width: 100%; min-width: 34rem; font-size: 1rem; }
+th, td { text-align: left; padding: 0.55rem 1rem 0.55rem 0; vertical-align: top; }
+thead th { border-top: 2px solid var(--ink); border-bottom: 1px solid var(--ink); font-weight: 600; }
+tbody tr:last-child td { border-bottom: 2px solid var(--ink); }
+td code { white-space: nowrap; }
+
+/* Spec sheet as a table of contents with dot leaders */
+dl.toc { margin: 1.25rem 0 0; display: grid; gap: 0.45rem; max-width: 46rem; }
+dl.toc > div { display: flex; align-items: baseline; gap: 0.5rem; min-width: 0; }
+dl.toc dt { flex: 0 1 auto; }
+dl.toc dt::after { content: ""; }
+dl.toc .lead { flex: 1 1 2rem; border-bottom: 2px dotted var(--rule); transform: translateY(-0.3em); min-width: 1.5rem; }
+dl.toc dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; flex: 0 1 auto; }
+
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1.5rem 2.5rem; }
+.two > div { min-width: 0; display: grid; gap: 0.6rem; align-content: start; }
+
+aside.caution {
+  border-left: 3px solid var(--box); padding: 0.2rem 0 0.2rem 1rem; max-width: var(--measure);
+}
+aside.caution p { margin: 0; }
+
+footer { border-top: 1px solid var(--rule); padding-block: 1.75rem 2.5rem; font-family: var(--mono); font-size: 0.8rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; justify-content: space-between; }
+
+@media (max-width: 760px) {
+  figure.build { grid-template-columns: minmax(0, 1fr); }
+  .arrow { grid-auto-flow: column; justify-content: start; }
+  .arrow b { transform: rotate(90deg); }
+  .hero { padding-block: 2.25rem 2rem; }
+  .sheet { padding: 1.6rem 1.3rem 1rem; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .copy { transition: color 0.15s, background 0.15s; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <a class="brand" href="#">soleo/<span>docker-</span>latex</a>
+  <nav aria-label="Sections">
+    <a href="#audience">Who it's for</a>
+    <a href="#usage">Usage</a>
+    <a href="#engines">Engines</a>
+    <a href="#ci">CI</a>
+    <a href="https://github.com/soleo/docker-latex">GitHub</a>
+  </nav>
+</header>
+
+<section class="hero" aria-labelledby="title">
+  <p class="kicker">TeX Live 2025 · Ubuntu 26.04 LTS · MIT</p>
+  <h1 id="title">Compile <span class="latex">L<span class="a">A</span>T<span class="e">E</span>X</span> without installing TeX.</h1>
+  <p class="lede">One Docker image with the full TeX Live distribution. Mount your folder, name your <code>.tex</code> file, and get a PDF. <strong>The same build on your laptop, your coauthor's laptop and CI.</strong></p>
+
+  <div class="cmd">
+    <pre id="cmd-hero"><span class="p">$ </span>docker run --rm -v "$PWD":/mnt/src ghcr.io/soleo/latex example.tex</pre>
+    <button class="copy" type="button" data-copy="cmd-hero" aria-label="Copy command">Copy</button>
+  </div>
+
+  <figure class="build" aria-label="example.tex source and the page it compiles to">
+    <div class="pane">
+      <div class="pane-label"><span>example.tex</span><span>input</span></div>
+<pre class="source"><span class="k">\documentclass</span>[a4paper,12pt]{article}
+<span class="k">\begin</span>{document}
+
+The foundations of the rigorous study
+of <span class="k">\emph</span>{analysis} were laid in the
+nineteenth century, notably by the
+mathematicians Cauchy and Weierstrass.
+
+Let $D$ be a subset of $<span class="k">\bf</span> R$ and let
+$f <span class="k">\colon</span> D <span class="k">\to</span> <span class="k">\mathbf</span>{R}$ be a real-valued
+function on $D$. The function $f$ is
+said to be <span class="k">\emph</span>{continuous} on $D$ if,
+for all $<span class="k">\epsilon</span> &gt; 0$ ...
+<span class="k">\[</span> |f(y) - f(x)| &lt; <span class="k">\epsilon</span>. <span class="k">\]</span>
+
+<span class="k">\end</span>{document}</pre>
+    </div>
+    <div class="arrow" aria-hidden="true"><b>→</b><span>latexmk</span></div>
+    <div class="pane">
+      <div class="pane-label"><span>example.pdf</span><span>output</span></div>
+      <div class="sheet" role="img" aria-label="Typeset page">
+        <p>The foundations of the rigorous study of <i>analysis</i> were laid in the nineteenth century, notably by the mathematicians Cauchy and Weierstrass. Central to the study of this subject are the formal definitions of <i>limits</i> and <i>continuity</i>.</p>
+        <p>Let <i>D</i> be a subset of <b>R</b> and let <i>f</i>&#8202;: <i>D</i> → <b>R</b> be a real-valued function on <i>D</i>. The function <i>f</i> is said to be <i>continuous</i> on <i>D</i> if, for all <i>ε</i> &gt; 0 and for all <i>x</i> ∈ <i>D</i>, there exists some <i>δ</i> &gt; 0 such that if <i>y</i> ∈ <i>D</i> satisfies</p>
+        <p class="disp">|f(y) − f(x)| &lt; ε.</p>
+        <p class="folio">1</p>
+      </div>
+    </div>
+  </figure>
+</section>
+
+<main>
+
+<section id="audience" aria-labelledby="h-audience">
+  <h2 id="h-audience"><span class="n">1</span><span>Who it's for</span></h2>
+  <p class="col">Anyone who writes in <span class="latex">L<span class="a">A</span>T<span class="e">E</span>X</span> but doesn't want a 7&nbsp;GB TeX install managed by hand on every machine.</p>
+  <div class="audiences">
+    <div>
+      <h3>Researchers and students</h3>
+      <p>Papers, theses and slides with BibLaTeX and biber. Every coauthor builds with the same TeX Live, so a package update on one laptop can't break the shared draft.</p>
+    </div>
+    <div>
+      <h3>Developers and CI</h3>
+      <p>Generate reports, docs and invoices in a pipeline. One <code>docker run</code> step, no TeX setup on the runner, and a non-zero exit code when the build fails.</p>
+    </div>
+    <div>
+      <h3>People writing a CV</h3>
+      <p>Modern CV templates need XeLaTeX and real fonts. Open Sans, Merriweather, Font Awesome and the rest of TeX Live's fonts load by name.</p>
+    </div>
+  </div>
+</section>
+
+<section id="usage" aria-labelledby="h-usage">
+  <h2 id="h-usage"><span class="n">2</span><span>Usage</span></h2>
+  <ol class="steps">
+    <li><div>
+      <h3>Get a Docker engine</h3>
+      <p class="col">On macOS, <a href="https://rancherdesktop.io/">Rancher Desktop</a> is free. Choose the dockerd (moby) engine and turn Kubernetes off. On Linux, any Docker Engine works.</p>
+<pre class="block">brew install --cask rancher
+export PATH="$HOME/.rd/bin:$PATH"   <span class="c"># add to ~/.zshrc</span>
+docker version</pre>
+    </div></li>
+    <li><div>
+      <h3>Pull the image</h3>
+      <p class="col">It is large (about 8&nbsp;GB) because it carries all of TeX Live. You download it once.</p>
+<pre class="block">docker pull ghcr.io/soleo/latex
+<span class="c"># or build it yourself</span>
+git clone https://github.com/soleo/docker-latex &amp;&amp; cd docker-latex
+docker build -t ghcr.io/soleo/latex .</pre>
+    </div></li>
+    <li><div>
+      <h3>Compile</h3>
+      <p class="col">Run it from the folder that holds your document. latexmk reruns the engine, BibTeX or biber until cross-references settle, then removes the aux files. The PDF lands next to the source.</p>
+<pre class="block">docker run --rm -v "$PWD":/mnt/src ghcr.io/soleo/latex paper.tex</pre>
+    </div></li>
+    <li><div>
+      <h3>Keep a shortcut</h3>
+      <p class="col">Add this to your <code>~/.zshrc</code> or <code>~/.bashrc</code>, then type <code>docker-latex paper.tex</code>.</p>
+<pre class="block">docker-latex() { docker run --rm -v "$PWD":/mnt/src ghcr.io/soleo/latex "$@"; }</pre>
+    </div></li>
+  </ol>
+</section>
+
+<section id="engines" aria-labelledby="h-engines">
+  <h2 id="h-engines"><span class="n">3</span><span>Engines</span></h2>
+  <p class="col">pdfLaTeX is the default. Set <code>LATEX_ENGINE</code> when your document needs Unicode input or system fonts through <code>fontspec</code>.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th scope="col">Engine</th><th scope="col">Set with</th><th scope="col">Use it for</th></tr></thead>
+      <tbody>
+        <tr><td>pdfLaTeX</td><td><code>(default)</code></td><td>Most papers and journal templates</td></tr>
+        <tr><td>XeLaTeX</td><td><code>-e LATEX_ENGINE=xelatex</code></td><td>CVs, custom fonts, CJK text</td></tr>
+        <tr><td>LuaLaTeX</td><td><code>-e LATEX_ENGINE=lualatex</code></td><td>fontspec with Lua scripting, large documents</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="two" style="margin-top:2rem">
+    <div>
+      <h3>Build a CV with XeLaTeX</h3>
+<pre class="block">docker run --rm -v "$PWD":/mnt/src \
+  -e LATEX_ENGINE=xelatex \
+  ghcr.io/soleo/latex cv.tex</pre>
+    </div>
+    <div>
+      <h3>Run any tool directly</h3>
+      <p class="note">A command name as the first argument runs as-is.</p>
+<pre class="block">docker run --rm -v "$PWD":/mnt/src ghcr.io/soleo/latex biber paper
+docker run --rm ghcr.io/soleo/latex fc-list :family</pre>
+    </div>
+  </div>
+</section>
+
+<section id="ci" aria-labelledby="h-ci">
+  <h2 id="h-ci"><span class="n">4</span><span>In GitHub Actions</span></h2>
+  <p class="col">Build the PDF on every push and keep it as a workflow artifact.</p>
+<pre class="block">jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile
+        run: docker run --rm -v "$PWD":/mnt/src ghcr.io/soleo/latex paper.tex
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paper
+          path: paper.pdf</pre>
+</section>
+
+<section id="inside" aria-labelledby="h-inside">
+  <h2 id="h-inside"><span class="n">5</span><span>What's inside</span></h2>
+  <dl class="toc">
+    <div><dt>Base image</dt><span class="lead" aria-hidden="true"></span><dd>Ubuntu 26.04 LTS</dd></div>
+    <div><dt>Distribution</dt><span class="lead" aria-hidden="true"></span><dd>texlive-full, TeX Live 2025</dd></div>
+    <div><dt>Engines</dt><span class="lead" aria-hidden="true"></span><dd>pdfTeX, XeTeX, LuaTeX</dd></div>
+    <div><dt>Build driver</dt><span class="lead" aria-hidden="true"></span><dd>latexmk</dd></div>
+    <div><dt>Bibliography</dt><span class="lead" aria-hidden="true"></span><dd>biber, BibTeX</dd></div>
+    <div><dt>Fonts</dt><span class="lead" aria-hidden="true"></span><dd>TeX Live OTF/TTF via fontconfig</dd></div>
+    <div><dt>Plotting</dt><span class="lead" aria-hidden="true"></span><dd>gnuplot</dd></div>
+    <div><dt>Image size</dt><span class="lead" aria-hidden="true"></span><dd>≈ 8.2 GB</dd></div>
+    <div><dt>Working directory</dt><span class="lead" aria-hidden="true"></span><dd><code>/mnt/src</code></dd></div>
+  </dl>
+</section>
+
+<section id="security" aria-labelledby="h-security">
+  <h2 id="h-security"><span class="n">6</span><span>Before you compile someone else's project</span></h2>
+  <aside class="caution">
+    <p>latexmk runs any <code>latexmkrc</code> or <code>.latexmkrc</code> in the mounted folder, and that file is Perl code. The container runs as root and can write anywhere in the folder you mount. Only compile projects you trust.</p>
+  </aside>
+</section>
+
+</main>
+
+<footer>
+  <span>MIT License · © 2015–2026 Xinjiang Shao</span>
+  <span><a href="https://github.com/soleo/docker-latex">github.com/soleo/docker-latex</a> · <a href="https://xinjiangshao.com">xinjiangshao.com</a></span>
+</footer>
+
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var pre = document.getElementById(btn.dataset.copy);
+    var text = pre.textContent.replace(/^\$\s*/, '');
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1600); };
+    var fallback = function () {
+      var r = document.createRange(); r.selectNodeContents(pre);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = 'Press ⌘C';
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else { fallback(); }
+  });
+});
+</script>
+</body>
+</html>
