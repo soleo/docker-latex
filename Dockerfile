@@ -1,5 +1,6 @@
 FROM ubuntu:26.04
-LABEL maintainer="Xinjiang Shao <shaoxinjiang at gmail dot com>"
+LABEL maintainer="Xinjiang Shao <shaoxinjiang at gmail dot com>" \
+      org.opencontainers.image.source="https://github.com/soleo/docker-latex"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
