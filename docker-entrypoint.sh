@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Usage:
-#   docker run --rm -v "$PWD":/mnt/src soleo/latex cv.tex
-#   docker run --rm -v "$PWD":/mnt/src -e LATEX_ENGINE=xelatex soleo/latex cv.tex
-#   docker run --rm -v "$PWD":/mnt/src soleo/latex xelatex cv.tex   # run any tool directly
+#   docker run --rm -v "$PWD":/mnt/src ghcr.io/soleo/latex cv.tex
+#   docker run --rm -v "$PWD":/mnt/src -e LATEX_ENGINE=xelatex ghcr.io/soleo/latex cv.tex
+#   docker run --rm -v "$PWD":/mnt/src ghcr.io/soleo/latex xelatex cv.tex   # run any tool directly
 set -euo pipefail
 cd /mnt/src
 

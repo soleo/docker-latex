@@ -49,38 +49,40 @@ On Linux, any Docker Engine install works.
 - Get the image
 
 ```shell
-$ docker pull soleo/latex
+$ docker pull ghcr.io/soleo/latex
 ```
+
+The image is published to the GitHub Container Registry from `master`. The old `soleo/latex` image on Docker Hub is from 2020 and no longer updated.
 
 or
 
 ```shell
-$ docker build -t soleo/latex .
+$ docker build -t ghcr.io/soleo/latex .
 ```
 
 - Compile LaTeX (pdflatex by default; latexmk reruns until references settle, then removes aux files)
 
 ```shell
-$ docker run --rm -v "$PWD":/mnt/src soleo/latex example.tex
+$ docker run --rm -v "$PWD":/mnt/src ghcr.io/soleo/latex example.tex
 ```
 
 - Compile a CV with XeLaTeX or LuaLaTeX
 
 ```shell
-$ docker run --rm -v "$PWD":/mnt/src -e LATEX_ENGINE=xelatex soleo/latex example-cv.tex
+$ docker run --rm -v "$PWD":/mnt/src -e LATEX_ENGINE=xelatex ghcr.io/soleo/latex example-cv.tex
 ```
 
 - Run any tool directly
 
 ```shell
-$ docker run --rm -v "$PWD":/mnt/src soleo/latex xelatex cv.tex
-$ docker run --rm -v "$PWD":/mnt/src soleo/latex fc-list | grep -i "open sans"
+$ docker run --rm -v "$PWD":/mnt/src ghcr.io/soleo/latex xelatex cv.tex
+$ docker run --rm -v "$PWD":/mnt/src ghcr.io/soleo/latex fc-list | grep -i "open sans"
 ```
 
 - Shortcut function for bash/zsh
 
 ```shell
-docker-latex() { docker run -v "$PWD":/mnt/src --rm soleo/latex:latest "$@"; }
+docker-latex() { docker run -v "$PWD":/mnt/src --rm ghcr.io/soleo/latex:latest "$@"; }
 ```
 
 Add the function to your `.bashrc` or `.zshrc`.
