@@ -10,6 +10,40 @@ LaTeX docker image for compiling LaTeX files, including CVs that need XeLaTeX or
 * fontconfig, with TeX Live's OpenType/TrueType fonts registered so `fontspec` can load them by name (e.g. Open Sans, Merriweather)
 * gnuplot
 
+## Setup
+
+You need a Docker engine. On macOS, [Rancher Desktop](https://rancherdesktop.io/) works well and is free.
+
+1. Install it:
+
+   ```shell
+   $ brew install --cask rancher
+   ```
+
+2. Start it with the Docker engine (moby) and Kubernetes off. Either pick those options on first launch, or run:
+
+   ```shell
+   $ "/Applications/Rancher Desktop.app/Contents/Resources/resources/darwin/bin/rdctl" start \
+       --container-engine.name=moby \
+       --kubernetes.enabled=false \
+       --application.path-management-strategy=manual
+   ```
+
+3. Put its tools on your `PATH` (add this to `~/.zshrc` to keep it):
+
+   ```shell
+   $ export PATH="$HOME/.rd/bin:$PATH"
+   ```
+
+4. Check it works:
+
+   ```shell
+   $ docker version
+   $ docker context ls   # rancher-desktop should be marked with *
+   ```
+
+On Linux, any Docker Engine install works.
+
 ## Usage
 
 - Get the image
